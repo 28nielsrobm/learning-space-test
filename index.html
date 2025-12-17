@@ -70,29 +70,57 @@
       color: white;
       font-weight: bold;
     }
+    /* ======================
+       MENU
+       ====================== */
+    .menu {
+      position: fixed;
+      inset: 0;
+      background: #111;
+      color: white;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 20000;
+      font-family: sans-serif;
+    }
+    
+    .menu h1 {
+      margin-bottom: 10px;
+    }
+    
+    .menu h3 {
+      margin-bottom: 8px;
+    }
+    
+    .menu-options {
+      margin: 10px 0;
+    }
+    
+    .menu-sliders {
+      text-align: center;
+      margin: 15px 0;
+    }
+    
+    .menu button {
+      padding: 10px 20px;
+      font-size: 18px;
+      cursor: pointer;
+    }
   </style>
 </head>
 <body>
   <!-- ===== GAME MENU ===== -->
-<div id="menu" style="
-  position: fixed;
-  top: 0; left: 0;
-  width: 100%; height: 100%;
-  background: #111;
-  color: white;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  z-index: 20000;
-  font-family: sans-serif;
-">
+<div id="menu" class="menu">
   <h1>Learning Space</h1>
   <h3>Gamemode:</h3>
+  <div class="menu-options">
   <label><input type="radio" name="mode" value="1" checked> Single Player</label>
   <label><input type="radio" name="mode" value="2"> Two Players</label>
+  </div>
   <br><br>
-  <div style="text-align:center;">
+  <div class="menu-sliders">
     <span>Player 1 Speed:</span>
     <input type="range" id="menuSpeed1" min="1" max="10">
     <br><br>
@@ -100,7 +128,7 @@
     <input type="range" id="menuSpeed2" min="1" max="10">
   </div>
   <br><br>
-  <button id="startButton" style="padding: 10px 20px; font-size: 18px; cursor:pointer;">
+  <button id="startButton">
     Start Game
   </button>
 </div>
