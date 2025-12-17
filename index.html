@@ -112,6 +112,37 @@
       font-size: 18px;
       cursor: pointer;
     }
+    /* ======================
+       GAME OVER SCREEN
+       ====================== */
+    .game-over {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.85);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 30000;
+      text-align: center;
+    }
+    
+    .game-over h1 {
+      font-size: 48px;
+      margin-bottom: 20px;
+    }
+    
+    .game-over p {
+      font-size: 20px;
+      margin: 6px 0;
+    }
+    
+    .game-over button {
+      margin-top: 20px;
+      padding: 10px 24px;
+      font-size: 18px;
+      cursor: pointer;
+    }
   /* ======================
      HIDDEN ELEMENT
      ====================== */
@@ -152,12 +183,23 @@
   z-index: 15000;
   display: none;
 ">Save Now</button>
+<div id="gameOverScreen" class="game-over hidden">
+  <h1>Game Over</h1>
+
+  <p id="finalScore1"></p>
+  <p id="finalScore2"></p>
+
+  <p id="finalHighScore1"></p>
+  <p id="finalHighScore2"></p>
+
+  <button id="gameOverReplay">Replay</button>
+</div>
 <script>
   // ---------- GLOBAL VARIABLES ----------
   const GAME_SIZE = 600;
   const PLAYER_SIZE = 40;
   const COIN_SIZE = 30;
-    
+  
   let gameOver = false;
   let timeLeft = 60;
   let timerInterval;
@@ -175,6 +217,14 @@ modeButtons.forEach(rb => {
 const startButton = document.getElementById('startButton');
 const menuSpeed1 = document.getElementById('menuSpeed1');
 const menuSpeed2 = document.getElementById('menuSpeed2');
+
+const gameOverScreen = document.getElementById('gameOverScreen');
+const finalScore1 = document.getElementById('finalScore1');
+const finalScore2 = document.getElementById('finalScore2');
+const finalHighScore1 = document.getElementById('finalHighScore1');
+const finalHighScore2 = document.getElementById('finalHighScore2');
+const gameOverReplay = document.getElementById('gameOverReplay');
+
 // Load speeds into sliders once API/localStorage finishes loading
 function updatePlayer2Slider() {
   const isSinglePlayer = gameMode === 1;
@@ -349,27 +399,24 @@ saveButton.onclick = () => {
     }
     syncSave();
     replayButton.style.display = 'block';
-    alert(
-      gameMode === 2
-        ? `Time's up!\nPlayer 1: ${score1}\nPlayer 2: ${score2}`
-        : `Time's up!\nScore: ${score1}`
-    );
   }
+  finalScore1.textContent = `Player 1 Score: ${score1}`;
+  finalHighScore1.textContent = `Player 1 High Score: ${highScore1}`;
+  
+  if (gameMode === 2) {
+    finalScore2.textContent = `Player 2 Score: ${score2}`;
+    finalHighScore2.textContent = `Player 2 High Score: ${highScore2}`;
+    finalScore2.classList.remove('hidden');
+    finalHighScore2.classList.remove('hidden');
+  } else {
+    finalScore2.classList.add('hidden');
+    finalHighScore2.classList.add('hidden');
+}
+gameOverScreen.classList.remove('hidden');
+
   // ---------- REPLAY ----------
-  const replayButton = document.createElement('button');
-  replayButton.textContent = 'Replay';
-  Object.assign(replayButton.style, {
-    position: 'fixed',
-    bottom: '20px',
-    left: '50%',
-    transform: 'translateX(-50%)',
-    padding: '8px 16px',
-    fontWeight: 'bold',
-    display: 'none',
-    zIndex: 10000
-  });
-  document.body.appendChild(replayButton);
-  replayButton.onclick = () => location.reload();
+  gameOverReplay.onclick = () => location.reload();
+  
   // ---------- GOOGLE SHEETS ----------
   const SHEET_URL = 'https://script.google.com/macros/s/AKfycbwct-j94qIwoqet8fc3uss54WZ0uK2EsBpQSUkcb6N5nOtHofouSSsldnVZiaJ7XKlvOw/exec';
   async function syncLoad() {
