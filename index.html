@@ -256,6 +256,7 @@ saveButton.onclick = () => {
   const highScoreDisplay1 = makeLabel('High Score: ' + highScore1, '25px', '5px');
   const scoreDisplay2 = makeLabel('Score: 0', '5px', '500px');
   const highScoreDisplay2 = makeLabel('High Score: ' + highScore2, '25px', '500px');
+  // Enable/Disable all UI elements for Player 2.
   const player2UI = [
     player2,
     scoreDisplay2,
@@ -348,7 +349,11 @@ saveButton.onclick = () => {
     }
     syncSave();
     replayButton.style.display = 'block';
-    alert(`Time's up!\nPlayer 1: ${score1}\nPlayer 2: ${score2}`);
+    alert(
+      gameMode === 2
+        ? `Time's up!\nPlayer 1: ${score1}\nPlayer 2: ${score2}`
+        : `Time's up!\nScore: ${score1}`
+    );
   }
   // ---------- REPLAY ----------
   const replayButton = document.createElement('button');
