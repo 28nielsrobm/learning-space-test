@@ -285,13 +285,13 @@ saveButton.onclick = () => {
   gameArea.appendChild(player1);
   let score1 = 0;
   let highScore1 = Number(localStorage.getItem('highScore1')) || 0;
-  let step1 = Number(localStorage.getItem('player1Speed')) || 3;
+  let step1 = Number(localStorage.getItem('player1Speed')) ?? 3;
   // Player 2 (Arrow Keys)
   const player2 = createPlayer('#4d4dff', 450, 180);
   gameArea.appendChild(player2);
   let score2 = 0;
   let highScore2 = Number(localStorage.getItem('highScore2')) || 0;
-  let step2 = Number(localStorage.getItem('player2Speed')) || 3;
+  let step2 = Number(localStorage.getItem('player2Speed')) ?? 3;
   // ---------- SCORE DISPLAYS ----------
   function makeLabel(text, top, left) {
     const el = document.createElement('div');
@@ -320,8 +320,8 @@ saveButton.onclick = () => {
   function spawnCoin() {
     const coin = document.createElement('div');
     coin.className = 'coin';
-    coin.style.left = Math.floor(Math.random() * 570) + 'px';
-    coin.style.top = Math.floor(Math.random() * 570) + 'px';
+    coin.style.left = Math.floor(Math.random() * (GAME_SIZE - COIN_SIZE)) + 'px';
+    coin.style.top = Math.floor(Math.random() * (GAME_SIZE - COIN_SIZE)) + 'px';
     gameArea.appendChild(coin);
     coins.push(coin);
   }
@@ -343,14 +343,14 @@ saveButton.onclick = () => {
     requestAnimationFrame(gameLoop);
   }
   function movePlayer(player, step, up, down, leftKey, rightKey) {
-    let top = parseInt(player.style.top);
-    let left = parseInt(player.style.left);
+    let top = parseInt(player.style.top) || 0;
+    let left = parseInt(player.style.left) || 0;
     if (keysPressed[up]) top -= step;
     if (keysPressed[down]) top += step;
     if (keysPressed[leftKey]) left -= step;
     if (keysPressed[rightKey]) left += step;
-    player.style.top = Math.max(0, Math.min(560, top)) + 'px';
-    player.style.left = Math.max(0, Math.min(560, left)) + 'px';
+    player.style.top = Math.max(0, Math.min(GAME_SIZE - PLAYER_SIZE, top)) + 'px';
+    player.style.left = Math.max(0, Math.min(GAME_SIZE - PLAYER_SIZE, left)) + 'px';
   }
   // ---------- COLLISION ----------
   function checkCollision(player, id) {
@@ -398,21 +398,20 @@ saveButton.onclick = () => {
       highScoreDisplay2.textContent = 'High Score: ' + highScore2;
     }
     syncSave();
-    replayButton.style.display = 'block';
+      finalScore1.textContent = `Player 1 Score: ${score1}`;
+      finalHighScore1.textContent = `Player 1 High Score: ${highScore1}`;
+      
+      if (gameMode === 2) {
+        finalScore2.textContent = `Player 2 Score: ${score2}`;
+        finalHighScore2.textContent = `Player 2 High Score: ${highScore2}`;
+        finalScore2.classList.remove('hidden');
+        finalHighScore2.classList.remove('hidden');
+      } else {
+        finalScore2.classList.add('hidden');
+        finalHighScore2.classList.add('hidden');
+    }
+    gameOverScreen.classList.remove('hidden');
   }
-  finalScore1.textContent = `Player 1 Score: ${score1}`;
-  finalHighScore1.textContent = `Player 1 High Score: ${highScore1}`;
-  
-  if (gameMode === 2) {
-    finalScore2.textContent = `Player 2 Score: ${score2}`;
-    finalHighScore2.textContent = `Player 2 High Score: ${highScore2}`;
-    finalScore2.classList.remove('hidden');
-    finalHighScore2.classList.remove('hidden');
-  } else {
-    finalScore2.classList.add('hidden');
-    finalHighScore2.classList.add('hidden');
-}
-gameOverScreen.classList.remove('hidden');
 
   // ---------- REPLAY ----------
   gameOverReplay.onclick = () => location.reload();
