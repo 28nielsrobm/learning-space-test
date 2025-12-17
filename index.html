@@ -5,6 +5,9 @@
   <title>Learning Space</title>
   <link rel="icon" href="data:,">
   <style>
+    /* ======================
+       GLOBAL STYLES
+       ====================== */
     body {
       background-color: #111;
       margin: 0;
@@ -12,6 +15,20 @@
       overflow: hidden;
       font-family: sans-serif;
       color: white;
+    }
+    /* ======================
+       UI ELEMENTS
+       ====================== */
+    .game-area {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 600px;
+      height: 600px;
+      background-color: #222;
+      border: 3px solid #000;
+      z-index: 9999;
     }
     .slider-container {
       position: fixed;
@@ -35,6 +52,23 @@
       font-weight: bold;
       z-index: 10002;
       cursor: pointer;
+    }
+    .player {
+      position: absolute;
+      width: 40px;
+      height: 40px;
+    }
+    .coin {
+      position: absolute;
+      width: 30px;
+      height: 30px;
+      background-color: gold;
+      border-radius: 50%;
+    }
+    .label {
+      position: absolute;
+      color: white;
+      font-weight: bold;
     }
   </style>
 </head>
@@ -128,29 +162,15 @@ saveButton.onclick = () => {
 };
   // ---------- GAME AREA ----------
   const gameArea = document.createElement('div');
-  Object.assign(gameArea.style, {
-    position: 'fixed',
-    top: '50%',
-    left: '50%',
-    transform: 'translate(-50%, -50%)',
-    width: '600px',
-    height: '600px',
-    backgroundColor: '#222',
-    border: '3px solid #000',
-    zIndex: 9999
-  });
+  gameArea.className = 'game-area';
   document.body.appendChild(gameArea);
   // ---------- PLAYER CREATION ----------
   function createPlayer(color, startX, startY) {
     const player = document.createElement('div');
-    Object.assign(player.style, {
-      position: 'absolute',
-      width: '40px',
-      height: '40px',
-      backgroundColor: color,
-      top: startY + 'px',
-      left: startX + 'px'
-    });
+    player.className = 'player';
+    player.style.backgroundColor = color;
+    player.style.top = startY + 'px';
+    player.style.left = startX + 'px';
     return player;
   }
   // Player 1 (WASD)
@@ -169,12 +189,9 @@ saveButton.onclick = () => {
   function makeLabel(text, top, left) {
     const el = document.createElement('div');
     el.textContent = text;
-    Object.assign(el.style, {
-      position: 'absolute',
-      top, left,
-      color: 'white',
-      fontWeight: 'bold'
-    });
+    el.className = 'label';
+    el.style.top = top;
+    el.style.left = left;
     gameArea.appendChild(el);
     return el;
   }
@@ -189,15 +206,9 @@ saveButton.onclick = () => {
   let coins = [];
   function spawnCoin() {
     const coin = document.createElement('div');
-    Object.assign(coin.style, {
-      position: 'absolute',
-      width: '30px',
-      height: '30px',
-      backgroundColor: 'gold',
-      borderRadius: '50%',
-      left: Math.floor(Math.random() * 570) + 'px',
-      top: Math.floor(Math.random() * 570) + 'px'
-    });
+    coin.className = 'coin';
+    coin.style.left = Math.floor(Math.random() * 570) + 'px';
+    coin.style.top = Math.floor(Math.random() * 570) + 'px';
     gameArea.appendChild(coin);
     coins.push(coin);
   }
