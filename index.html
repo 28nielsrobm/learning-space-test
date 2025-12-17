@@ -30,6 +30,10 @@
       border: 3px solid #000;
       z-index: 9999;
     }
+    input[type="range"]:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
     .slider-container {
       position: fixed;
       bottom: 120px;
@@ -147,7 +151,7 @@
   const GAME_SIZE = 600;
   const PLAYER_SIZE = 40;
   const COIN_SIZE = 30;
-  
+    
   let gameOver = false;
   let timeLeft = 60;
   let timerInterval;
@@ -155,10 +159,20 @@
 let gameMode = 1; // Default: single player
 const menu = document.getElementById('menu');
 const modeButtons = document.getElementsByName('mode');
+modeButtons.forEach(rb => {
+  rb.addEventListener('change', () => {
+    gameMode = Number(rb.value);
+    updatePlayer2Slider();
+  });
+});
 const startButton = document.getElementById('startButton');
 const menuSpeed1 = document.getElementById('menuSpeed1');
 const menuSpeed2 = document.getElementById('menuSpeed2');
 // Load speeds into sliders once API/localStorage finishes loading
+function updatePlayer2Slider() {
+  const isSinglePlayer = gameMode === 1;
+  menuSpeed2.disabled = isSinglePlayer;
+}
 function applyMenuValues() {
   menuSpeed1.value = step1;
   menuSpeed2.value = step2;
@@ -171,6 +185,9 @@ startButton.onclick = () => {
   step2 = Number(menuSpeed2.value);
   // Save them immediately
   syncSave();
+  if (gameMode === 1) {
+    step2 = 0; // ignored anyway, but safe
+  }
   // Hide menu, show game
   menu.style.display = "none";
   //Show Save Now button
@@ -367,6 +384,7 @@ saveButton.onclick = () => {
   (async () => {
   await syncLoad();
   applyMenuValues();
+  updatePlayer2Slider()
 })();
 </script>
 </body>
