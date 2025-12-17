@@ -112,6 +112,12 @@
       font-size: 18px;
       cursor: pointer;
     }
+  /* ======================
+     HIDDEN ELEMENT
+     ====================== */
+   .hidden {
+     display: none !important;
+   }
   </style>
 </head>
 <body>
@@ -163,6 +169,7 @@ modeButtons.forEach(rb => {
   rb.addEventListener('change', () => {
     gameMode = Number(rb.value);
     updatePlayer2Slider();
+    pdatePlayer2Visibility();
   });
 });
 const startButton = document.getElementById('startButton');
@@ -172,6 +179,15 @@ const menuSpeed2 = document.getElementById('menuSpeed2');
 function updatePlayer2Slider() {
   const isSinglePlayer = gameMode === 1;
   menuSpeed2.disabled = isSinglePlayer;
+}
+function updatePlayer2Visibility() {
+  const isSinglePlayer = gameMode === 1;
+
+  player2UI.forEach(el => {
+    el.classList.toggle('hidden', isSinglePlayer);
+  });
+
+  menuSpeed2.classList.toggle('hidden', isSinglePlayer);
 }
 function applyMenuValues() {
   menuSpeed1.value = step1;
@@ -192,10 +208,6 @@ startButton.onclick = () => {
   menu.style.display = "none";
   //Show Save Now button
   saveButton.style.display = 'block';
-  // Hide Player 2 if single-player
-  if (gameMode === 1) {
-    player2.style.display = "none";
-  }
   startTimer();
   requestAnimationFrame(gameLoop);
 };
@@ -230,6 +242,11 @@ saveButton.onclick = () => {
   let score2 = 0;
   let highScore2 = Number(localStorage.getItem('highScore2')) || 0;
   let step2 = Number(localStorage.getItem('player2Speed')) || 3;
+  const player2UI = [
+    player2,
+    scoreDisplay2,
+    highScoreDisplay2
+  ];
   // ---------- SCORE DISPLAYS ----------
   function makeLabel(text, top, left) {
     const el = document.createElement('div');
@@ -384,7 +401,8 @@ saveButton.onclick = () => {
   (async () => {
   await syncLoad();
   applyMenuValues();
-  updatePlayer2Slider()
+  updatePlayer2Slider();
+  pdatePlayer2Visibility();
 })();
 </script>
 </body>
