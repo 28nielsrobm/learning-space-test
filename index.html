@@ -16,6 +16,7 @@
       font-family: sans-serif;
       color: white;
     }
+
     /* ======================
        UI ELEMENTS
        ====================== */
@@ -30,23 +31,16 @@
       border: 3px solid #000;
       z-index: 9999;
     }
+
+    input[type="range"] {
+      width: 200px;
+    }
+
     input[type="range"]:disabled {
       opacity: 0.4;
       cursor: not-allowed;
     }
-    .slider-container {
-      position: fixed;
-      bottom: 120px;
-      width: 100%;
-      text-align: center;
-      z-index: 10001;
-    }
-    .slider-label {
-      margin-right: 10px;
-    }
-    input[type="range"] {
-      width: 200px;
-    }
+
     #saveButton {
       position: fixed;
       bottom: 60px;
@@ -54,14 +48,16 @@
       transform: translateX(-50%);
       padding: 8px 16px;
       font-weight: bold;
-      z-index: 10002;
+      z-index: 15000;
       cursor: pointer;
     }
+
     .player {
       position: absolute;
       width: 40px;
       height: 40px;
     }
+
     .coin {
       position: absolute;
       width: 30px;
@@ -69,11 +65,12 @@
       background-color: gold;
       border-radius: 50%;
     }
+
     .label {
       position: absolute;
-      color: white;
       font-weight: bold;
     }
+
     /* ======================
        MENU
        ====================== */
@@ -81,44 +78,32 @@
       position: fixed;
       inset: 0;
       background: #111;
-      color: white;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
       z-index: 20000;
-      font-family: sans-serif;
     }
-    
-    .menu h1 {
-      margin-bottom: 10px;
-    }
-    
-    .menu h3 {
-      margin-bottom: 8px;
-    }
-    
-    .menu-options {
-      margin: 10px 0;
-    }
-    
+
+    .menu-options,
     .menu-sliders {
+      margin: 12px 0;
       text-align: center;
-      margin: 15px 0;
     }
-    
+
     .menu button {
       padding: 10px 20px;
       font-size: 18px;
       cursor: pointer;
     }
+
     /* ======================
-       GAME OVER SCREEN
+       GAME OVER
        ====================== */
     .game-over {
       position: fixed;
       inset: 0;
-      background: rgba(0, 0, 0, 0.85);
+      background: rgba(0,0,0,0.85);
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -126,98 +111,96 @@
       z-index: 30000;
       text-align: center;
     }
-    
+
     .game-over h1 {
       font-size: 48px;
       margin-bottom: 20px;
     }
-    
+
     .game-over p {
       font-size: 20px;
       margin: 6px 0;
     }
-    
+
     .game-over button {
       margin-top: 20px;
       padding: 10px 24px;
       font-size: 18px;
       cursor: pointer;
     }
-  /* ======================
-     HIDDEN ELEMENT
-     ====================== */
-   .hidden {
-     display: none !important;
-   }
+
+    /* ======================
+       HIDDEN
+       ====================== */
+    .hidden {
+      display: none !important;
+    }
   </style>
 </head>
 <body>
-  <!-- ===== GAME MENU ===== -->
+
+<!-- ===== MENU ===== -->
 <div id="menu" class="menu">
   <h1>Learning Space</h1>
-  <h3>Gamemode:</h3>
+
   <div class="menu-options">
-  <label><input type="radio" name="mode" value="1" checked> Single Player</label>
-  <label><input type="radio" name="mode" value="2"> Two Players</label>
+    <label><input type="radio" name="mode" value="1" checked> Single Player</label>
+    <label><input type="radio" name="mode" value="2"> Two Players</label>
   </div>
-  <br><br>
+
   <div class="menu-sliders">
-    <span>Player 1 Speed:</span>
-    <input type="range" id="menuSpeed1" min="1" max="10">
-    <br><br>
-    <span>Player 2 Speed:</span>
-    <input type="range" id="menuSpeed2" min="1" max="10">
+    <div>
+      Player 1 Speed:
+      <input type="range" id="menuSpeed1" min="1" max="10">
+    </div>
+    <br>
+    <div>
+      Player 2 Speed:
+      <input type="range" id="menuSpeed2" min="1" max="10">
+    </div>
   </div>
-  <br><br>
-  <button id="startButton">
-    Start Game
-  </button>
+
+  <button id="startButton">Start Game</button>
 </div>
-  <button id="saveButton" style="
-  position: fixed;
-  bottom: 60px;
-  left: 50%;
-  transform: translateX(-50%);
-  padding: 8px 16px;
-  font-weight: bold;
-  z-index: 15000;
-  display: none;
-">Save Now</button>
+
+<button id="saveButton" class="hidden">Save Now</button>
+
+<!-- ===== GAME OVER ===== -->
 <div id="gameOverScreen" class="game-over hidden">
   <h1>Game Over</h1>
-
   <p id="finalScore1"></p>
   <p id="finalScore2"></p>
-
   <p id="finalHighScore1"></p>
   <p id="finalHighScore2"></p>
-
   <button id="gameOverReplay">Replay</button>
 </div>
+
 <script>
-  // ---------- GLOBAL VARIABLES ----------
-  const GAME_SIZE = 600;
-  const PLAYER_SIZE = 40;
-  const COIN_SIZE = 30;
-  
-  let gameOver = false;
-  let timeLeft = 60;
-  let timerInterval;
-  // ===== MENU LOGIC =====
-let gameMode = 1; // Default: single player
+/* ======================
+   CONSTANTS & STATE
+   ====================== */
+const GAME_SIZE = 600;
+const PLAYER_SIZE = 40;
+const COIN_SIZE = 30;
+
+let gameOver = false;
+let timeLeft = 60;
+let timerInterval;
+let gameMode = 1;
+
+/* ======================
+   MENU ELEMENTS
+   ====================== */
 const menu = document.getElementById('menu');
-const modeButtons = document.getElementsByName('mode');
-modeButtons.forEach(rb => {
-  rb.addEventListener('change', () => {
-    gameMode = Number(rb.value);
-    updatePlayer2Slider();
-    updatePlayer2Visibility();
-  });
-});
 const startButton = document.getElementById('startButton');
+const saveButton = document.getElementById('saveButton');
 const menuSpeed1 = document.getElementById('menuSpeed1');
 const menuSpeed2 = document.getElementById('menuSpeed2');
+const modeButtons = document.getElementsByName('mode');
 
+/* ======================
+   GAME OVER ELEMENTS
+   ====================== */
 const gameOverScreen = document.getElementById('gameOverScreen');
 const finalScore1 = document.getElementById('finalScore1');
 const finalScore2 = document.getElementById('finalScore2');
@@ -225,237 +208,234 @@ const finalHighScore1 = document.getElementById('finalHighScore1');
 const finalHighScore2 = document.getElementById('finalHighScore2');
 const gameOverReplay = document.getElementById('gameOverReplay');
 
-// Load speeds into sliders once API/localStorage finishes loading
-function updatePlayer2Slider() {
-  const isSinglePlayer = gameMode === 1;
-  menuSpeed2.disabled = isSinglePlayer;
-}
-function updatePlayer2Visibility() {
-  const isSinglePlayer = gameMode === 1;
+/* ======================
+   PLAYERS & SCORES
+   ====================== */
+let score1 = 0;
+let score2 = 0;
+let highScore1 = Number(localStorage.getItem('highScore1')) || 0;
+let highScore2 = Number(localStorage.getItem('highScore2')) || 0;
+let step1 = Number(localStorage.getItem('player1Speed')) ?? 3;
+let step2 = Number(localStorage.getItem('player2Speed')) ?? 3;
 
-  player2UI.forEach(el => {
-    el.classList.toggle('hidden', isSinglePlayer);
+/* ======================
+   GAME AREA
+   ====================== */
+const gameArea = document.createElement('div');
+gameArea.className = 'game-area';
+document.body.appendChild(gameArea);
+
+function createPlayer(color, x, y) {
+  const p = document.createElement('div');
+  p.className = 'player';
+  p.style.backgroundColor = color;
+  p.style.left = x + 'px';
+  p.style.top = y + 'px';
+  return p;
+}
+
+const player1 = createPlayer('#ff4d4d', 100, 180);
+const player2 = createPlayer('#4d4dff', 450, 180);
+gameArea.append(player1, player2);
+
+/* ======================
+   LABELS
+   ====================== */
+function makeLabel(text, top, left) {
+  const el = document.createElement('div');
+  el.className = 'label';
+  el.textContent = text;
+  el.style.top = top;
+  el.style.left = left;
+  gameArea.appendChild(el);
+  return el;
+}
+
+const scoreDisplay1 = makeLabel('Score: 0', '5px', '5px');
+const highScoreDisplay1 = makeLabel(`High Score: ${highScore1}`, '25px', '5px');
+const scoreDisplay2 = makeLabel('Score: 0', '5px', '500px');
+const highScoreDisplay2 = makeLabel(`High Score: ${highScore2}`, '25px', '500px');
+const timerDisplay = makeLabel('Time: 60', '5px', '50%');
+timerDisplay.style.transform = 'translateX(-50%)';
+
+const player2UI = [player2, scoreDisplay2, highScoreDisplay2];
+
+/* ======================
+   COINS
+   ====================== */
+let coins = [];
+
+function spawnCoin() {
+  const c = document.createElement('div');
+  c.className = 'coin';
+  c.style.left = Math.random() * (GAME_SIZE - COIN_SIZE) + 'px';
+  c.style.top = Math.random() * (GAME_SIZE - COIN_SIZE) + 'px';
+  gameArea.appendChild(c);
+  coins.push(c);
+}
+
+for (let i = 0; i < 10; i++) spawnCoin();
+
+/* ======================
+   INPUT
+   ====================== */
+const keys = {};
+document.addEventListener('keydown', e => keys[e.key] = true);
+document.addEventListener('keyup', e => keys[e.key] = false);
+
+/* ======================
+   GAME LOOP
+   ====================== */
+function movePlayer(p, step, u, d, l, r) {
+  let x = parseInt(p.style.left) || 0;
+  let y = parseInt(p.style.top) || 0;
+
+  if (keys[u]) y -= step;
+  if (keys[d]) y += step;
+  if (keys[l]) x -= step;
+  if (keys[r]) x += step;
+
+  p.style.left = Math.max(0, Math.min(GAME_SIZE - PLAYER_SIZE, x)) + 'px';
+  p.style.top = Math.max(0, Math.min(GAME_SIZE - PLAYER_SIZE, y)) + 'px';
+}
+
+function checkCollision(p, id) {
+  for (let i = coins.length - 1; i >= 0; i--) {
+    const c = coins[i];
+    const px = parseInt(p.style.left);
+    const py = parseInt(p.style.top);
+    const cx = parseInt(c.style.left);
+    const cy = parseInt(c.style.top);
+
+    if (px < cx + COIN_SIZE && px + PLAYER_SIZE > cx &&
+        py < cy + COIN_SIZE && py + PLAYER_SIZE > cy) {
+      gameArea.removeChild(c);
+      coins.splice(i, 1);
+      spawnCoin();
+      if (id === 1) {
+        score1++;
+        scoreDisplay1.textContent = `Score: ${score1}`;
+      } else {
+        score2++;
+        scoreDisplay2.textContent = `Score: ${score2}`;
+      }
+    }
+  }
+}
+
+function gameLoop() {
+  if (!gameOver) {
+    movePlayer(player1, step1, 'w', 's', 'a', 'd');
+    checkCollision(player1, 1);
+
+    if (gameMode === 2) {
+      movePlayer(player2, step2, 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight');
+      checkCollision(player2, 2);
+    }
+  }
+  requestAnimationFrame(gameLoop);
+}
+
+/* ======================
+   TIMER & END GAME
+   ====================== */
+function startTimer() {
+  timerInterval = setInterval(() => {
+    timeLeft--;
+    timerDisplay.textContent = `Time: ${timeLeft}`;
+    if (timeLeft <= 0) {
+      clearInterval(timerInterval);
+      gameOver = true;
+      updateHighScores();
+    }
+  }, 1000);
+}
+
+function updateHighScores() {
+  if (score1 > highScore1) highScore1 = score1;
+  if (gameMode === 2 && score2 > highScore2) highScore2 = score2;
+
+  finalScore1.textContent = `Player 1 Score: ${score1}`;
+  finalHighScore1.textContent = `Player 1 High Score: ${highScore1}`;
+
+  if (gameMode === 2) {
+    finalScore2.textContent = `Player 2 Score: ${score2}`;
+    finalHighScore2.textContent = `Player 2 High Score: ${highScore2}`;
+    finalScore2.classList.remove('hidden');
+    finalHighScore2.classList.remove('hidden');
+  } else {
+    finalScore2.classList.add('hidden');
+    finalHighScore2.classList.add('hidden');
+  }
+
+  syncSave();
+  gameOverScreen.classList.remove('hidden');
+}
+
+/* ======================
+   MENU BEHAVIOR
+   ====================== */
+function updatePlayer2UI() {
+  const single = gameMode === 1;
+  menuSpeed2.disabled = single;
+  player2UI.forEach(el => el.classList.toggle('hidden', single));
+}
+
+modeButtons.forEach(rb => {
+  rb.addEventListener('change', () => {
+    gameMode = Number(rb.value);
+    updatePlayer2UI();
   });
+});
 
-  menuSpeed2.classList.toggle('hidden', isSinglePlayer);
-}
-function applyMenuValues() {
-  menuSpeed1.value = step1;
-  menuSpeed2.value = step2;
-}
 startButton.onclick = () => {
-  // Set mode
-  modeButtons.forEach(rb => { if (rb.checked) gameMode = Number(rb.value); });
-  // Apply slider values
   step1 = Number(menuSpeed1.value);
   step2 = Number(menuSpeed2.value);
-  // Save them immediately
-  syncSave();
-  if (gameMode === 1) {
-    step2 = 0; // ignored anyway, but safe
-  }
-  // Hide menu, show game
-  menu.style.display = "none";
-  //Show Save Now button
-  saveButton.style.display = 'block';
+  menu.classList.add('hidden');
+  saveButton.classList.remove('hidden');
+  updatePlayer2UI();
   startTimer();
   requestAnimationFrame(gameLoop);
 };
-  // ===== SAVE NOW BUTTON =====
-const saveButton = document.getElementById('saveButton');
+
 saveButton.onclick = () => {
   syncSave();
-  alert('Scores and speeds saved!');
+  alert('Saved!');
 };
-  // ---------- GAME AREA ----------
-  const gameArea = document.createElement('div');
-  gameArea.className = 'game-area';
-  document.body.appendChild(gameArea);
-  // ---------- PLAYER CREATION ----------
-  function createPlayer(color, startX, startY) {
-    const player = document.createElement('div');
-    player.className = 'player';
-    player.style.backgroundColor = color;
-    player.style.top = startY + 'px';
-    player.style.left = startX + 'px';
-    return player;
-  }
-  // Player 1 (WASD)
-  const player1 = createPlayer('#ff4d4d', 100, 180);
-  gameArea.appendChild(player1);
-  let score1 = 0;
-  let highScore1 = Number(localStorage.getItem('highScore1')) || 0;
-  let step1 = Number(localStorage.getItem('player1Speed')) ?? 3;
-  // Player 2 (Arrow Keys)
-  const player2 = createPlayer('#4d4dff', 450, 180);
-  gameArea.appendChild(player2);
-  let score2 = 0;
-  let highScore2 = Number(localStorage.getItem('highScore2')) || 0;
-  let step2 = Number(localStorage.getItem('player2Speed')) ?? 3;
-  // ---------- SCORE DISPLAYS ----------
-  function makeLabel(text, top, left) {
-    const el = document.createElement('div');
-    el.textContent = text;
-    el.className = 'label';
-    el.style.top = top;
-    el.style.left = left;
-    gameArea.appendChild(el);
-    return el;
-  }
-  const scoreDisplay1 = makeLabel('Score: 0', '5px', '5px');
-  const highScoreDisplay1 = makeLabel('High Score: ' + highScore1, '25px', '5px');
-  const scoreDisplay2 = makeLabel('Score: 0', '5px', '500px');
-  const highScoreDisplay2 = makeLabel('High Score: ' + highScore2, '25px', '500px');
-  // Enable/Disable all UI elements for Player 2.
-  const player2UI = [
-    player2,
-    scoreDisplay2,
-    highScoreDisplay2
-  ];
-  // ---------- TIMER ----------
-  const timerDisplay = makeLabel('Time: 60', '5px', '50%');
-  timerDisplay.style.transform = 'translateX(-50%)';
-  // ---------- COINS ----------
-  let coins = [];
-  function spawnCoin() {
-    const coin = document.createElement('div');
-    coin.className = 'coin';
-    coin.style.left = Math.floor(Math.random() * (GAME_SIZE - COIN_SIZE)) + 'px';
-    coin.style.top = Math.floor(Math.random() * (GAME_SIZE - COIN_SIZE)) + 'px';
-    gameArea.appendChild(coin);
-    coins.push(coin);
-  }
-  for (let i = 0; i < 10; i++) spawnCoin();
-  // ---------- INPUT ----------
-  const keysPressed = {};
-  document.addEventListener('keydown', e => keysPressed[e.key] = true);
-  document.addEventListener('keyup', e => keysPressed[e.key] = false);
-  // ---------- GAME LOOP ----------
-  function gameLoop() {
-    if (!gameOver) {
-      movePlayer(player1, step1, 'w', 's', 'a', 'd');
-      checkCollision(player1, 1);
-      if (gameMode === 2) {
-        movePlayer(player2, step2, 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight');
-        checkCollision(player2, 2);
-      }
-    }
-    requestAnimationFrame(gameLoop);
-  }
-  function movePlayer(player, step, up, down, leftKey, rightKey) {
-    let top = parseInt(player.style.top) || 0;
-    let left = parseInt(player.style.left) || 0;
-    if (keysPressed[up]) top -= step;
-    if (keysPressed[down]) top += step;
-    if (keysPressed[leftKey]) left -= step;
-    if (keysPressed[rightKey]) left += step;
-    player.style.top = Math.max(0, Math.min(GAME_SIZE - PLAYER_SIZE, top)) + 'px';
-    player.style.left = Math.max(0, Math.min(GAME_SIZE - PLAYER_SIZE, left)) + 'px';
-  }
-  // ---------- COLLISION ----------
-  function checkCollision(player, id) {
-    for (let i = coins.length - 1; i >= 0; i--) {
-      const coin = coins[i];
-      const cx = parseInt(coin.style.left);
-      const cy = parseInt(coin.style.top);
-      const px = parseInt(player.style.left);
-      const py = parseInt(player.style.top);
-      if (px < cx + 30 && px + 40 > cx && py < cy + 30 && py + 40 > cy) {
-        gameArea.removeChild(coin);
-        coins.splice(i, 1);
-        spawnCoin();
-        if (id === 1) {
-          score1++;
-          scoreDisplay1.textContent = 'Score: ' + score1;
-        } else {
-          score2++;
-          scoreDisplay2.textContent = 'Score: ' + score2;
-        }
-      }
-    }
-  }
-  // ---------- TIMER ----------
-  function startTimer() {
-    clearInterval(timerInterval);
-    timerInterval = setInterval(() => {
-      timeLeft--;
-      timerDisplay.textContent = 'Time: ' + timeLeft;
-      if (timeLeft <= 0) {
-        clearInterval(timerInterval);
-        gameOver = true;
-        Object.keys(keysPressed).forEach(k => keysPressed[k] = false);
-        updateHighScores();
-      }
-    }, 1000);
-  }
-  function updateHighScores() {
-    if (score1 > highScore1) {
-      highScore1 = score1;
-      highScoreDisplay1.textContent = 'High Score: ' + highScore1;
-    }
-    if (gameMode === 2 && score2 > highScore2) {
-      highScore2 = score2;
-      highScoreDisplay2.textContent = 'High Score: ' + highScore2;
-    }
-    syncSave();
-      finalScore1.textContent = `Player 1 Score: ${score1}`;
-      finalHighScore1.textContent = `Player 1 High Score: ${highScore1}`;
-      
-      if (gameMode === 2) {
-        finalScore2.textContent = `Player 2 Score: ${score2}`;
-        finalHighScore2.textContent = `Player 2 High Score: ${highScore2}`;
-        finalScore2.classList.remove('hidden');
-        finalHighScore2.classList.remove('hidden');
-      } else {
-        finalScore2.classList.add('hidden');
-        finalHighScore2.classList.add('hidden');
-    }
-    gameOverScreen.classList.remove('hidden');
-  }
 
-  // ---------- REPLAY ----------
-  gameOverReplay.onclick = () => location.reload();
-  
-  // ---------- GOOGLE SHEETS ----------
-  const SHEET_URL = 'https://script.google.com/macros/s/AKfycbwct-j94qIwoqet8fc3uss54WZ0uK2EsBpQSUkcb6N5nOtHofouSSsldnVZiaJ7XKlvOw/exec';
-  async function syncLoad() {
-    try {
-      const res = await fetch(SHEET_URL + '?action=getData');
-      const data = await res.json();
-      data.forEach(([p, h, s]) => {
-        if (p === 'Player1') { highScore1 = h; step1 = s; }
-        if (p === 'Player2') { highScore2 = h; step2 = s; }
-      });
-      applyMenuValues();
-    } catch {
-      step1 = Number(localStorage.getItem('player1Speed')) || step1;
-      step2 = Number(localStorage.getItem('player2Speed')) || step2;
-      applyMenuValues();
-    }
-  }
-  async function syncSave() {
-    try {
-      await fetch(`${SHEET_URL}?action=setData&player=Player1&highScore=${highScore1}&speed=${step1}`);
-      if (gameMode === 2) {
-        await fetch(`${SHEET_URL}?action=setData&player=Player2&highScore=${highScore2}&speed=${step2}`);
-      }
-      localStorage.setItem('player1Speed', step1);
-      localStorage.setItem('player2Speed', step2);
-      localStorage.setItem('highScore1', highScore1);
-      localStorage.setItem('highScore2', highScore2);
-    } catch {
-      localStorage.setItem('player1Speed', step1);
-      localStorage.setItem('player2Speed', step2);
-      localStorage.setItem('highScore1', highScore1);
-      localStorage.setItem('highScore2', highScore2);
-    }
-  }
-  // ---------- START ----------
-  (async () => {
+gameOverReplay.onclick = () => location.reload();
+
+/* ======================
+   STORAGE
+   ====================== */
+const SHEET_URL = 'https://script.google.com/macros/s/AKfycbwct-j94qIwoqet8fc3uss54WZ0uK2EsBpQSUkcb6N5nOtHofouSSsldnVZiaJ7XKlvOw/exec';
+
+async function syncLoad() {
+  try {
+    const res = await fetch(SHEET_URL + '?action=getData');
+    const data = await res.json();
+    data.forEach(([p, h, s]) => {
+      if (p === 'Player1') { highScore1 = h; step1 = s; }
+      if (p === 'Player2') { highScore2 = h; step2 = s; }
+    });
+  } catch {}
+  menuSpeed1.value = step1;
+  menuSpeed2.value = step2;
+}
+
+function syncSave() {
+  localStorage.setItem('player1Speed', step1);
+  localStorage.setItem('player2Speed', step2);
+  localStorage.setItem('highScore1', highScore1);
+  localStorage.setItem('highScore2', highScore2);
+}
+
+/* ======================
+   INIT
+   ====================== */
+(async () => {
   await syncLoad();
-  applyMenuValues();
-  updatePlayer2Slider();
-  updatePlayer2Visibility();
+  updatePlayer2UI();
 })();
 </script>
 </body>
