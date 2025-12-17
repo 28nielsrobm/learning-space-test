@@ -169,7 +169,7 @@ modeButtons.forEach(rb => {
   rb.addEventListener('change', () => {
     gameMode = Number(rb.value);
     updatePlayer2Slider();
-    pdatePlayer2Visibility();
+    updatePlayer2Visibility();
   });
 });
 const startButton = document.getElementById('startButton');
@@ -242,11 +242,6 @@ saveButton.onclick = () => {
   let score2 = 0;
   let highScore2 = Number(localStorage.getItem('highScore2')) || 0;
   let step2 = Number(localStorage.getItem('player2Speed')) || 3;
-  const player2UI = [
-    player2,
-    scoreDisplay2,
-    highScoreDisplay2
-  ];
   // ---------- SCORE DISPLAYS ----------
   function makeLabel(text, top, left) {
     const el = document.createElement('div');
@@ -261,6 +256,11 @@ saveButton.onclick = () => {
   const highScoreDisplay1 = makeLabel('High Score: ' + highScore1, '25px', '5px');
   const scoreDisplay2 = makeLabel('Score: 0', '5px', '500px');
   const highScoreDisplay2 = makeLabel('High Score: ' + highScore2, '25px', '500px');
+  const player2UI = [
+    player2,
+    scoreDisplay2,
+    highScoreDisplay2
+  ];
   // ---------- TIMER ----------
   const timerDisplay = makeLabel('Time: 60', '5px', '50%');
   timerDisplay.style.transform = 'translateX(-50%)';
@@ -342,7 +342,7 @@ saveButton.onclick = () => {
       highScore1 = score1;
       highScoreDisplay1.textContent = 'High Score: ' + highScore1;
     }
-    if (score2 > highScore2) {
+    if (gameMode === 2 && score2 > highScore2) {
       highScore2 = score2;
       highScoreDisplay2.textContent = 'High Score: ' + highScore2;
     }
@@ -385,7 +385,9 @@ saveButton.onclick = () => {
   async function syncSave() {
     try {
       await fetch(`${SHEET_URL}?action=setData&player=Player1&highScore=${highScore1}&speed=${step1}`);
-      await fetch(`${SHEET_URL}?action=setData&player=Player2&highScore=${highScore2}&speed=${step2}`);
+      if (gameMode === 2) {
+        await fetch(`${SHEET_URL}?action=setData&player=Player2&highScore=${highScore2}&speed=${step2}`);
+      }
       localStorage.setItem('player1Speed', step1);
       localStorage.setItem('player2Speed', step2);
       localStorage.setItem('highScore1', highScore1);
@@ -402,7 +404,7 @@ saveButton.onclick = () => {
   await syncLoad();
   applyMenuValues();
   updatePlayer2Slider();
-  pdatePlayer2Visibility();
+  updatePlayer2Visibility();
 })();
 </script>
 </body>
