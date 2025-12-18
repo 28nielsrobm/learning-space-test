@@ -5,6 +5,9 @@
   <title>Learning Space</title>
   <link rel="icon" href="data:,">
   <style>
+    /* ======================
+       GLOBAL STYLES
+       ====================== */
     body {
       background-color: #111;
       margin: 0;
@@ -14,6 +17,9 @@
       color: white;
     }
 
+    /* ======================
+       UI ELEMENTS
+       ====================== */
     .game-area {
       position: fixed;
       top: 50%;
@@ -65,6 +71,9 @@
       font-weight: bold;
     }
 
+    /* ======================
+       MENU
+       ====================== */
     .menu {
       position: fixed;
       inset: 0;
@@ -88,6 +97,9 @@
       cursor: pointer;
     }
 
+    /* ======================
+       GAME OVER
+       ====================== */
     .game-over {
       position: fixed;
       inset: 0;
@@ -100,26 +112,26 @@
       text-align: center;
     }
 
-    /* === PAUSE MENU === */
-    .pause-menu {
-      position: fixed;
-      inset: 0;
-      background: rgba(0,0,0,0.8);
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      z-index: 25000;
-      text-align: center;
+    .game-over h1 {
+      font-size: 48px;
+      margin-bottom: 20px;
     }
 
-    .pause-menu button {
-      margin-top: 16px;
+    .game-over p {
+      font-size: 20px;
+      margin: 6px 0;
+    }
+
+    .game-over button {
+      margin-top: 20px;
       padding: 10px 24px;
       font-size: 18px;
       cursor: pointer;
     }
 
+    /* ======================
+       HIDDEN
+       ====================== */
     .hidden {
       display: none !important;
     }
@@ -137,24 +149,21 @@
   </div>
 
   <div class="menu-sliders">
-    Player 1 Speed:
-    <input type="range" id="menuSpeed1" min="1" max="10">
-    <br><br>
-    Player 2 Speed:
-    <input type="range" id="menuSpeed2" min="1" max="10">
+    <div>
+      Player 1 Speed:
+      <input type="range" id="menuSpeed1" min="1" max="10">
+    </div>
+    <br>
+    <div>
+      Player 2 Speed:
+      <input type="range" id="menuSpeed2" min="1" max="10">
+    </div>
   </div>
 
   <button id="startButton">Start Game</button>
 </div>
 
 <button id="saveButton" class="hidden">Save Now</button>
-
-<!-- ===== PAUSE MENU ===== -->
-<div id="pauseMenu" class="pause-menu hidden">
-  <h1>Paused</h1>
-  <button id="resumeButton">Resume</button>
-  <button id="pauseToMenu">Back to Menu</button>
-</div>
 
 <!-- ===== GAME OVER ===== -->
 <div id="gameOverScreen" class="game-over hidden">
@@ -167,37 +176,51 @@
 </div>
 
 <script>
+/* ======================
+   CONSTANTS & STATE
+   ====================== */
 const GAME_SIZE = 600;
 const PLAYER_SIZE = 40;
 const COIN_SIZE = 30;
 
 let gameOver = false;
-let paused = false; // === PAUSE STATE ===
 let timeLeft = 60;
 let timerInterval;
 let gameMode = 1;
 
-/* ELEMENTS */
+/* ======================
+   MENU ELEMENTS
+   ====================== */
 const menu = document.getElementById('menu');
-const pauseMenu = document.getElementById('pauseMenu');
-const resumeButton = document.getElementById('resumeButton');
-const pauseToMenu = document.getElementById('pauseToMenu');
-const saveButton = document.getElementById('saveButton');
 const startButton = document.getElementById('startButton');
+const saveButton = document.getElementById('saveButton');
 const menuSpeed1 = document.getElementById('menuSpeed1');
 const menuSpeed2 = document.getElementById('menuSpeed2');
 const modeButtons = document.getElementsByName('mode');
 
+/* ======================
+   GAME OVER ELEMENTS
+   ====================== */
 const gameOverScreen = document.getElementById('gameOverScreen');
+const finalScore1 = document.getElementById('finalScore1');
+const finalScore2 = document.getElementById('finalScore2');
+const finalHighScore1 = document.getElementById('finalHighScore1');
+const finalHighScore2 = document.getElementById('finalHighScore2');
 const gameOverReplay = document.getElementById('gameOverReplay');
 
-let score1 = 0, score2 = 0;
+/* ======================
+   PLAYERS & SCORES
+   ====================== */
+let score1 = 0;
+let score2 = 0;
 let highScore1 = Number(localStorage.getItem('highScore1')) || 0;
 let highScore2 = Number(localStorage.getItem('highScore2')) || 0;
 let step1 = Number(localStorage.getItem('player1Speed')) ?? 3;
 let step2 = Number(localStorage.getItem('player2Speed')) ?? 3;
 
-/* GAME AREA */
+/* ======================
+   GAME AREA
+   ====================== */
 const gameArea = document.createElement('div');
 gameArea.className = 'game-area';
 document.body.appendChild(gameArea);
@@ -215,7 +238,9 @@ const player1 = createPlayer('#ff4d4d', 100, 180);
 const player2 = createPlayer('#4d4dff', 450, 180);
 gameArea.append(player1, player2);
 
-/* LABELS */
+/* ======================
+   LABELS
+   ====================== */
 function makeLabel(text, top, left) {
   const el = document.createElement('div');
   el.className = 'label';
@@ -227,14 +252,19 @@ function makeLabel(text, top, left) {
 }
 
 const scoreDisplay1 = makeLabel('Score: 0', '5px', '5px');
+const highScoreDisplay1 = makeLabel(`High Score: ${highScore1}`, '25px', '5px');
 const scoreDisplay2 = makeLabel('Score: 0', '5px', '500px');
+const highScoreDisplay2 = makeLabel(`High Score: ${highScore2}`, '25px', '500px');
 const timerDisplay = makeLabel('Time: 60', '5px', '50%');
 timerDisplay.style.transform = 'translateX(-50%)';
 
-const player2UI = [player2, scoreDisplay2];
+const player2UI = [player2, scoreDisplay2, highScoreDisplay2];
 
-/* COINS */
+/* ======================
+   COINS
+   ====================== */
 let coins = [];
+
 function spawnCoin() {
   const c = document.createElement('div');
   c.className = 'coin';
@@ -243,67 +273,108 @@ function spawnCoin() {
   gameArea.appendChild(c);
   coins.push(c);
 }
+
 for (let i = 0; i < 10; i++) spawnCoin();
 
-/* INPUT */
+/* ======================
+   INPUT
+   ====================== */
 const keys = {};
-document.addEventListener('keydown', e => {
-  if (e.key === 'Escape') togglePause();
-  keys[e.key] = true;
-});
+document.addEventListener('keydown', e => keys[e.key] = true);
 document.addEventListener('keyup', e => keys[e.key] = false);
 
-/* GAME LOOP */
+/* ======================
+   GAME LOOP
+   ====================== */
+function movePlayer(p, step, u, d, l, r) {
+  let x = parseInt(p.style.left) || 0;
+  let y = parseInt(p.style.top) || 0;
+
+  if (keys[u]) y -= step;
+  if (keys[d]) y += step;
+  if (keys[l]) x -= step;
+  if (keys[r]) x += step;
+
+  p.style.left = Math.max(0, Math.min(GAME_SIZE - PLAYER_SIZE, x)) + 'px';
+  p.style.top = Math.max(0, Math.min(GAME_SIZE - PLAYER_SIZE, y)) + 'px';
+}
+
+function checkCollision(p, id) {
+  for (let i = coins.length - 1; i >= 0; i--) {
+    const c = coins[i];
+    const px = parseInt(p.style.left);
+    const py = parseInt(p.style.top);
+    const cx = parseInt(c.style.left);
+    const cy = parseInt(c.style.top);
+
+    if (px < cx + COIN_SIZE && px + PLAYER_SIZE > cx &&
+        py < cy + COIN_SIZE && py + PLAYER_SIZE > cy) {
+      gameArea.removeChild(c);
+      coins.splice(i, 1);
+      spawnCoin();
+      if (id === 1) {
+        score1++;
+        scoreDisplay1.textContent = `Score: ${score1}`;
+      } else {
+        score2++;
+        scoreDisplay2.textContent = `Score: ${score2}`;
+      }
+    }
+  }
+}
+
 function gameLoop() {
-  if (!gameOver && !paused) {
-    movePlayer(player1, step1, 'w','s','a','d');
+  if (!gameOver) {
+    movePlayer(player1, step1, 'w', 's', 'a', 'd');
     checkCollision(player1, 1);
+
     if (gameMode === 2) {
-      movePlayer(player2, step2,'ArrowUp','ArrowDown','ArrowLeft','ArrowRight');
+      movePlayer(player2, step2, 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight');
       checkCollision(player2, 2);
     }
   }
   requestAnimationFrame(gameLoop);
 }
 
-/* TIMER */
+/* ======================
+   TIMER & END GAME
+   ====================== */
 function startTimer() {
   timerInterval = setInterval(() => {
-    if (!paused) {
-      timeLeft--;
-      timerDisplay.textContent = `Time: ${timeLeft}`;
-      if (timeLeft <= 0) {
-        clearInterval(timerInterval);
-        gameOver = true;
-        gameOverScreen.classList.remove('hidden');
-      }
+    timeLeft--;
+    timerDisplay.textContent = `Time: ${timeLeft}`;
+    if (timeLeft <= 0) {
+      clearInterval(timerInterval);
+      gameOver = true;
+      updateHighScores();
     }
   }, 1000);
 }
 
-/* === PAUSE LOGIC === */
-function togglePause() {
-  if (menu.classList.contains('hidden') &&
-      gameOverScreen.classList.contains('hidden')) {
-    paused = !paused;
-    pauseMenu.classList.toggle('hidden', !paused);
+function updateHighScores() {
+  if (score1 > highScore1) highScore1 = score1;
+  if (gameMode === 2 && score2 > highScore2) highScore2 = score2;
+
+  finalScore1.textContent = `Player 1 Score: ${score1}`;
+  finalHighScore1.textContent = `Player 1 High Score: ${highScore1}`;
+
+  if (gameMode === 2) {
+    finalScore2.textContent = `Player 2 Score: ${score2}`;
+    finalHighScore2.textContent = `Player 2 High Score: ${highScore2}`;
+    finalScore2.classList.remove('hidden');
+    finalHighScore2.classList.remove('hidden');
+  } else {
+    finalScore2.classList.add('hidden');
+    finalHighScore2.classList.add('hidden');
   }
+
+  syncSave();
+  gameOverScreen.classList.remove('hidden');
 }
 
-resumeButton.onclick = () => {
-  paused = false;
-  pauseMenu.classList.add('hidden');
-};
-
-pauseToMenu.onclick = () => {
-  paused = false;
-  pauseMenu.classList.add('hidden');
-  menu.classList.remove('hidden');
-  saveButton.classList.add('hidden');
-  clearInterval(timerInterval);
-};
-
-/* MENU */
+/* ======================
+   MENU BEHAVIOR
+   ====================== */
 function updatePlayer2UI() {
   const single = gameMode === 1;
   menuSpeed2.disabled = single;
@@ -327,12 +398,43 @@ startButton.onclick = () => {
   requestAnimationFrame(gameLoop);
 };
 
+saveButton.onclick = () => {
+  syncSave();
+  alert('Saved!');
+};
+
 gameOverReplay.onclick = () => location.reload();
 
-/* INIT */
-(async () => {
+/* ======================
+   STORAGE
+   ====================== */
+const SHEET_URL = 'https://script.google.com/macros/s/AKfycbwct-j94qIwoqet8fc3uss54WZ0uK2EsBpQSUkcb6N5nOtHofouSSsldnVZiaJ7XKlvOw/exec';
+
+async function syncLoad() {
+  try {
+    const res = await fetch(SHEET_URL + '?action=getData');
+    const data = await res.json();
+    data.forEach(([p, h, s]) => {
+      if (p === 'Player1') { highScore1 = h; step1 = s; }
+      if (p === 'Player2') { highScore2 = h; step2 = s; }
+    });
+  } catch {}
   menuSpeed1.value = step1;
   menuSpeed2.value = step2;
+}
+
+function syncSave() {
+  localStorage.setItem('player1Speed', step1);
+  localStorage.setItem('player2Speed', step2);
+  localStorage.setItem('highScore1', highScore1);
+  localStorage.setItem('highScore2', highScore2);
+}
+
+/* ======================
+   INIT
+   ====================== */
+(async () => {
+  await syncLoad();
   updatePlayer2UI();
 })();
 </script>
