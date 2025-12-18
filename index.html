@@ -144,6 +144,8 @@ body {
 const GAME_SIZE=600, PLAYER_SIZE=40, COIN_SIZE=30;
 let gameOver=false, timeLeft=60, timerInterval;
 let gameMode=1;
+let rafId = null;
+let isPaused = false;
 
 /* ======================
    ELEMENTS
@@ -236,6 +238,20 @@ const keys={};
 document.addEventListener('keydown',e=>keys[e.key]=true);
 document.addEventListener('keyup',e=>keys[e.key]=false);
 
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape' && !menu.classList.contains('hidden')) return;
+
+  if (e.key === 'Escape' && !gameOver) {
+    isPaused = !isPaused;
+
+    if (isPaused) {
+      clearInterval(timerInterval);
+    } else {
+      startTimer();
+    }
+  }
+});
+
 /* ======================
    GAME LOOP
    ====================== */
@@ -267,7 +283,7 @@ function checkCollision(p,id){
 }
 
 function gameLoop(){
-  if(!gameOver){
+  if(!gameOver && !isPaused){
     movePlayer(player1,step1,'w','s','a','d');
     checkCollision(player1,1);
     if(gameMode===2){
@@ -275,7 +291,7 @@ function gameLoop(){
       checkCollision(player2,2);
     }
   }
-  requestAnimationFrame(gameLoop);
+  rafId = requestAnimationFrame(gameLoop);
 }
 
 /* ======================
@@ -294,6 +310,12 @@ function startTimer(){
 }
 
 function endGame(){
+  highScore1 = Math.max(highScore1, score1);
+  highScore2 = Math.max(highScore2, score2);
+   
+  highScoreDisplay1.textContent = 'High Score: ' + highScore1;
+  highScoreDisplay2.textContent = 'High Score: ' + highScore2;
+   
   finalScore1.textContent=`Player 1 Score: ${score1}`;
   finalHighScore1.textContent=`Player 1 High Score: ${Math.max(highScore1,score1)}`;
   if(gameMode===2){
@@ -325,6 +347,7 @@ modeButtons.forEach(rb=>{
 });
 
 startButton.onclick=()=>{
+  resetGameState();
   step1=Number(menuSpeed1.value);
   step2=Number(menuSpeed2.value);
   menu.classList.add('hidden');
@@ -334,26 +357,61 @@ startButton.onclick=()=>{
   requestAnimationFrame(gameLoop);
 };
 
-saveButton.onclick=()=>alert('Saved!');
+saveButton.onclick = async () => {
+  localStorage.setItem('highScore1', highScore1);
+  localStorage.setItem('highScore2', highScore2);
+  localStorage.setItem('player1Speed', step1);
+  localStorage.setItem('player2Speed', step2);
+
+  try{
+    await fetch('https://script.google.com/macros/s/AKfycbwct-j94qIwoqet8fc3uss54WZ0uK2EsBpQSUkcb6N5nOtHofouSSsldnVZiaJ7XKlvOw/exec', {
+      method: 'POST',
+      body: JSON.stringify({
+        p1: { high: highScore1, speed: step1 },
+        p2: { high: highScore2, speed: step2 }
+      })
+    });
+  }catch{}
+
+  alert('Game Saved!');
+};
 
 /* ======================
    BACK TO MENU (NEW)
    ====================== */
+function resetGameState(){
+  gameOver = false;
+  isPaused = false;
+  timeLeft = 60;
+  score1 = 0;
+  score2 = 0;
+
+  coins.forEach(c => c.remove());
+  coins = [];
+
+  timerDisplay.textContent = 'Time: 60';
+  scoreDisplay1.textContent = 'Score: 0';
+  scoreDisplay2.textContent = 'Score: 0';
+
+  clearInterval(timerInterval);
+  if (rafId) cancelAnimationFrame(rafId);
+}
+
 backToMenu.onclick=()=>{
   gameOverScreen.classList.add('hidden');
   menu.classList.remove('hidden');
   saveButton.classList.add('hidden');
 
-  // Reset state
-  gameOver=false;
-  timeLeft=60;
-  score1=0;
-  score2=0;
-  coins.forEach(c=>c.remove());
-  coins=[];
-  timerDisplay.textContent='Time: 60';
-  scoreDisplay1.textContent='Score: 0';
-  scoreDisplay2.textContent='Score: 0';
+   resetGameState();
+};
+
+gameOverReplay.onclick = () => {
+  gameOverScreen.classList.add('hidden');
+  resetGameState();
+
+  for (let i = 0; i < 10; i++) spawnCoin();
+  startTimer();
+  rafId = requestAnimationFrame(gameLoop);
 };
 
 /* ======================
