@@ -297,10 +297,12 @@ function gameLoop(){
 /* ======================
    TIMER
    ====================== */
+if (timerInterval) clearInterval(timerInterval);
 function startTimer(){
   timerInterval=setInterval(()=>{
     timeLeft--;
     timerDisplay.textContent=`Time: ${timeLeft}`;
+    timerDisplay.textContent = isPaused ? 'Paused' : `Time: ${timeLeft}`;
     if(timeLeft<=0){
       clearInterval(timerInterval);
       gameOver=true;
@@ -354,7 +356,7 @@ startButton.onclick=()=>{
   saveButton.classList.remove('hidden');
   for(let i=0;i<10;i++)spawnCoin();
   startTimer();
-  requestAnimationFrame(gameLoop);
+  rafId = requestAnimationFrame(gameLoop);
 };
 
 saveButton.onclick = async () => {
