@@ -310,20 +310,16 @@ function startTimer(){
   },1000);
 }
 
-function endGame(){
-  highScore1 = Math.max(highScore1, score1);
-  highScore2 = Math.max(highScore2, score2);
-   
+function endGame(){ 
   highScoreDisplay1.textContent = 'High Score: ' + highScore1;
   highScoreDisplay2.textContent = 'High Score: ' + highScore2;
    
-  finalScore1.textContent=`Player 1 Score: ${score1}`;
-  finalHighScore1.textContent=`Player 1 High Score: ${Math.max(highScore1,score1)}`;
+  finalHighScore1.textContent = 'Player 1 High Score: ${Math.max(highScore1,score1)}';
+
   if(gameMode===2){
     finalScore2.textContent=`Player 2 Score: ${score2}`;
-    finalHighScore2.textContent=`Player 2 High Score: ${Math.max(highScore2,score2)}`;
     finalScore2.classList.remove('hidden');
-    finalHighScore2.classList.remove('hidden');
+    finalHighScore1.textContent = 'Player 1 High Score: ${Math.max(highScore1,score1)}';
   } else {
     finalScore2.classList.add('hidden');
     finalHighScore2.classList.add('hidden');
@@ -361,12 +357,18 @@ modeButtons.forEach(rb=>{
 startButton.onclick=()=>{
   resetGameState();
   step1=Number(menuSpeed1.value);
-  step2=Number(menuSpeed2.value);
+  if (gameMode === 2) {
+     step2=Number(menuSpeed2.value);
+  }
   menu.classList.add('hidden');
   saveButton.classList.remove('hidden');
   for(let i=0;i<10;i++)spawnCoin();
   startTimer();
   rafId = requestAnimationFrame(gameLoop);
+  localStorage.setItem('player1Speed', step1);
+  if (gameMode === 2) {
+    localStorage.setItem('player2Speed', step2);
+  }
 };
 
 saveButton.onclick = async () => {
@@ -407,6 +409,7 @@ function resetGameState(){
 
   clearInterval(timerInterval);
   if (rafId) cancelAnimationFrame(rafId);
+  rafId = requestAnimationFrame(gameLoop);
 }
 
 backToMenu.onclick=()=>{
