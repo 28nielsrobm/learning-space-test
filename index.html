@@ -301,7 +301,7 @@ if (timerInterval) clearInterval(timerInterval);
 function startTimer(){
   timerInterval=setInterval(()=>{
     timeLeft--;
-    timerDisplay.textContent = isPaused ? 'Paused' : `Time: ${timeLeft}`;
+    timerDisplay.textContent = `Time: ${timeLeft}`;
     if(timeLeft<=0){
       clearInterval(timerInterval);
       gameOver=true;
@@ -311,15 +311,18 @@ function startTimer(){
 }
 
 function endGame(){ 
-  highScoreDisplay1.textContent = 'High Score: ' + highScore1;
-  highScoreDisplay2.textContent = 'High Score: ' + highScore2;
+  highScore1 = Math.max(highScore1, score1);
+  highScore2 = Math.max(highScore2, score2);
    
-  finalHighScore1.textContent = 'Player 1 High Score: ${Math.max(highScore1,score1)}';
+  highScoreDisplay1.textContent = 'High Score: ' + highScore1;
+  finalScore1.textContent = `Player 1 Score: ${score1}`;
+  finalHighScore1.textContent = `Player 1 High Score: ${highScore1}`;
+  highScoreDisplay1.textContent = 'High Score: ' + highScore1;
 
   if(gameMode===2){
-    finalScore2.textContent=`Player 2 Score: ${score2}`;
+    finalHighScore2.textContent = `Player 2 High Score: ${highScore2}`;
     finalScore2.classList.remove('hidden');
-    finalHighScore1.textContent = 'Player 1 High Score: ${Math.max(highScore1,score1)}';
+    highScoreDisplay2.textContent = 'High Score: ' + highScore2;
   } else {
     finalScore2.classList.add('hidden');
     finalHighScore2.classList.add('hidden');
@@ -409,7 +412,6 @@ function resetGameState(){
 
   clearInterval(timerInterval);
   if (rafId) cancelAnimationFrame(rafId);
-  rafId = requestAnimationFrame(gameLoop);
 }
 
 backToMenu.onclick=()=>{
@@ -460,4 +462,3 @@ async function syncLoad(){
 </script>
 </body>
 </html>
- 
