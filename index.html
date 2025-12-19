@@ -301,7 +301,6 @@ if (timerInterval) clearInterval(timerInterval);
 function startTimer(){
   timerInterval=setInterval(()=>{
     timeLeft--;
-    timerDisplay.textContent=`Time: ${timeLeft}`;
     timerDisplay.textContent = isPaused ? 'Paused' : `Time: ${timeLeft}`;
     if(timeLeft<=0){
       clearInterval(timerInterval);
@@ -330,6 +329,17 @@ function endGame(){
     finalHighScore2.classList.add('hidden');
   }
   gameOverScreen.classList.remove('hidden');
+   // SAVE IMMEDIATELY ON GAME OVER
+localStorage.setItem('highScore1', highScore1);
+localStorage.setItem('highScore2', highScore2);
+
+fetch('https://script.google.com/macros/s/AKfycbwct-j94qIwoqet8fc3uss54WZ0uK2EsBpQSUkcb6N5nOtHofouSSsldnVZiaJ7XKlvOw/exec', {
+  method: 'POST',
+  body: JSON.stringify({
+    p1: { high: highScore1, speed: step1 },
+    p2: { high: highScore2, speed: step2 }
+  })
+}).catch(() => {});
 }
 
 /* ======================
