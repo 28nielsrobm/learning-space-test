@@ -284,13 +284,25 @@ function checkCollision(p,id){
 
 function gameLoop(){
   if(!gameOver && !isPaused){
-    movePlayer(player1,step1,'w','s','a','d');
-    checkCollision(player1,1);
-    if(gameMode===2){
-      movePlayer(player2,step2,'ArrowUp','ArrowDown','ArrowLeft','ArrowRight');
-      checkCollision(player2,2);
+
+
+    if (gameMode === 1) {
+      // SINGLE PLAYER: WASD + Arrow Keys control Player 1
+      movePlayer(player1, step1, 'w','s','a','d');
+      movePlayer(player1, step1, 'ArrowUp','ArrowDown','ArrowLeft','ArrowRight');
+      checkCollision(player1, 1);
     }
+
+    if (gameMode === 2) {
+      // TWO PLAYER: Split controls
+      movePlayer(player1, step1, 'w','s','a','d');
+      movePlayer(player2, step2, 'ArrowUp','ArrowDown','ArrowLeft','ArrowRight');
+      checkCollision(player1, 1);
+      checkCollision(player2, 2);
+    }
+
   }
+     
   rafId = requestAnimationFrame(gameLoop);
 }
 
