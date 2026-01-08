@@ -102,7 +102,10 @@ body {
 <div id="loadingScreen" class="loading">
   Loading saved data…
 </div>
-
+   
+<!-- ===== COUNTDOWN OVERLAY ===== -->
+<div id="countdown" class="loading hidden"></div>
+   
 <!-- ===== MENU ===== -->
 <div id="menu" class="menu hidden">
   <h1>Learning Space</h1>
@@ -146,6 +149,8 @@ let gameOver=false, timeLeft=60, timerInterval;
 let gameMode=1;
 let rafId = null;
 let isPaused = false;
+let isCountingDown = false;
+const countdown = document.getElementById('countdown');
 
 /* ======================
    ELEMENTS
@@ -283,7 +288,7 @@ function checkCollision(p,id){
 }
 
 function gameLoop(){
-  if(!gameOver && !isPaused){
+  if(!gameOver && !isPaused && !isCountingDown){
 
 
     if (gameMode === 1) {
@@ -353,6 +358,24 @@ fetch('https://script.google.com/macros/s/AKfycbwct-j94qIwoqet8fc3uss54WZ0uK2EsB
 }).catch(() => {});
 }
 
+async function startCountdown() {
+  isCountingDown = true;
+  countdown.classList.remove('hidden');
+
+  const steps = ['3', '2', '1', 'GO!'];
+
+  for (const text of steps) {
+    countdown.textContent = text;
+    await new Promise(r => setTimeout(r, 800));
+  }
+
+  countdown.classList.add('hidden');
+  isCountingDown = false;
+
+  startTimer();
+  rafId = requestAnimationFrame(gameLoop);
+}
+
 /* ======================
    MENU CONTROL
    ====================== */
@@ -378,8 +401,7 @@ startButton.onclick=()=>{
   menu.classList.add('hidden');
   saveButton.classList.remove('hidden');
   for(let i=0;i<10;i++)spawnCoin();
-  startTimer();
-  rafId = requestAnimationFrame(gameLoop);
+  startCountdown();
   localStorage.setItem('player1Speed', step1);
   if (gameMode === 2) {
     localStorage.setItem('player2Speed', step2);
