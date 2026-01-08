@@ -38,6 +38,33 @@ body {
 .label { position:absolute; font-weight:bold; }
 
 /* ======================
+   COIN PICKUP EFFECTS
+   ====================== */
+@keyframes coinPop {
+  0%   { transform: scale(1); opacity: 1; }
+  60%  { transform: scale(1.6); opacity: 0.8; }
+  100% { transform: scale(0.2); opacity: 0; }
+}
+
+.coin.pickup {
+  animation: coinPop 300ms ease-out forwards;
+}
+
+/* Floating +1 text */
+.floating-text {
+  position: absolute;
+  color: gold;
+  font-weight: bold;
+  pointer-events: none;
+  animation: floatUp 700ms ease-out forwards;
+}
+
+@keyframes floatUp {
+  from { transform: translateY(0); opacity: 1; }
+  to   { transform: translateY(-30px); opacity: 0; }
+}
+
+/* ======================
    MENU
    ====================== */
 .menu {
@@ -144,6 +171,9 @@ body {
 /* ======================
    CONSTANTS & STATE
    ====================== */
+const coinSound = new Audio(
+  'data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAESsAACJWAAACABAAZGF0YQAAAAA='
+);
 const GAME_SIZE=600, PLAYER_SIZE=40, COIN_SIZE=30;
 let gameOver=false, timeLeft=60, timerInterval;
 let gameMode=1;
@@ -236,6 +266,17 @@ function spawnCoin(){
   coins.push(c);
 }
 
+function showFloatingText(text, x, y) {
+  const el = document.createElement('div');
+  el.className = 'floating-text';
+  el.textContent = text;
+  el.style.left = x + 'px';
+  el.style.top = y + 'px';
+  gameArea.appendChild(el);
+
+  setTimeout(() => el.remove(), 700);
+}
+
 /* ======================
    INPUT
    ====================== */
@@ -276,13 +317,34 @@ function checkCollision(p,id){
     const c=coins[i];
     const px=parseInt(p.style.left), py=parseInt(p.style.top);
     const cx=parseInt(c.style.left), cy=parseInt(c.style.top);
+
     if(px<cx+COIN_SIZE && px+PLAYER_SIZE>cx &&
        py<cy+COIN_SIZE && py+PLAYER_SIZE>cy){
-      gameArea.removeChild(c);
+
+      // Visual pickup
+      c.classList.add('pickup');
+
+      // Floating +1
+      showFloatingText('+1', cx + 10, cy - 5);
+
+      // Sound (fails silently if blocked)
+      try { coinSound.currentTime = 0; coinSound.play(); } catch {}
+
+      // Remove coin after animation
+      setTimeout(() => {
+        if (c.parentNode) c.remove();
+      }, 300);
+
       coins.splice(i,1);
       spawnCoin();
-      if(id===1){score1++; scoreDisplay1.textContent=`Score: ${score1}`;}
-      else{score2++; scoreDisplay2.textContent=`Score: ${score2}`;}
+
+      if(id===1){
+        score1++;
+        scoreDisplay1.textContent=`Score: ${score1}`;
+      } else if (gameMode === 2) {
+        score2++;
+        scoreDisplay2.textContent=`Score: ${score2}`;
+      }
     }
   }
 }
