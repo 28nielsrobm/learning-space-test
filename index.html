@@ -77,7 +77,7 @@ body {
 }
 
 /* ======================
-   LOADING OVERLAY (NEW)
+   LOADING OVERLAY
    ====================== */
 .loading {
   position:fixed;
@@ -98,7 +98,7 @@ body {
 </head>
 <body>
 
-<!-- ===== LOADING SCREEN (NEW) ===== -->
+<!-- ===== LOADING SCREEN ===== -->
 <div id="loadingScreen" class="loading">
   Loading saved data…
 </div>
@@ -328,8 +328,11 @@ function startTimer(){
 }
 
 function endGame(){ 
-  highScore1 = Math.max(highScore1, score1);
-  highScore2 = Math.max(highScore2, score2);
+  highScore1 = mergeHighScore(highScore1, score1, safeGet('highScore1'));
+
+  if (gameMode === 2) {
+     highScore2 = mergeHighScore(highScore2, score2, safeGet('highScore2'));
+  }
    
   highScoreDisplay1.textContent = 'High Score: ' + highScore1;
   finalScore1.textContent = `Player 1 Score: ${score1}`;
@@ -346,16 +349,7 @@ function endGame(){
   }
   gameOverScreen.classList.remove('hidden');
    // SAVE IMMEDIATELY ON GAME OVER
-localStorage.setItem('highScore1', highScore1);
-localStorage.setItem('highScore2', highScore2);
-
-fetch('https://script.google.com/macros/s/AKfycbwct-j94qIwoqet8fc3uss54WZ0uK2EsBpQSUkcb6N5nOtHofouSSsldnVZiaJ7XKlvOw/exec', {
-  method: 'POST',
-  body: JSON.stringify({
-    p1: { high: highScore1, speed: step1 },
-    p2: { high: highScore2, speed: step2 }
-  })
-}).catch(() => {});
+   saveAll();
 }
 
 async function startCountdown() {
@@ -409,26 +403,12 @@ startButton.onclick=()=>{
 };
 
 saveButton.onclick = async () => {
-  localStorage.setItem('highScore1', highScore1);
-  localStorage.setItem('highScore2', highScore2);
-  localStorage.setItem('player1Speed', step1);
-  localStorage.setItem('player2Speed', step2);
-
-  try{
-    await fetch('https://script.google.com/macros/s/AKfycbwct-j94qIwoqet8fc3uss54WZ0uK2EsBpQSUkcb6N5nOtHofouSSsldnVZiaJ7XKlvOw/exec', {
-      method: 'POST',
-      body: JSON.stringify({
-        p1: { high: highScore1, speed: step1 },
-        p2: { high: highScore2, speed: step2 }
-      })
-    });
-  }catch{}
-
+  saveAll();
   alert('Game Saved!');
 };
 
 /* ======================
-   BACK TO MENU (NEW)
+   BACK TO MENU
    ====================== */
 function resetGameState(){
   gameOver = false;
@@ -468,17 +448,88 @@ gameOverReplay.onclick = () => {
 /* ======================
    STORAGE (LOAD)
    ====================== */
+
+function safeGet(key, fallback = 0) {
+  try {
+    const v = localStorage.getItem(key);
+    return v !== null ? Number(v) : fallback;
+  } catch {
+    return fallback;
+  }
+}
+
+function safeSet(key, value) {
+  try {
+    localStorage.setItem(key, value);
+  } catch {}
+}
+
+function mergeHighScore(current, local, remote) {
+  return Math.max(current || 0, local || 0, remote || 0);
+}
+
+async function saveAll() {
+  safeSet('highScore1', highScore1);
+  safeSet('highScore2', highScore2);
+  safeSet('player1Speed', step1);
+  safeSet('player2Speed', step2);
+
+  try {
+    await fetch(
+      'https://script.google.com/macros/s/AKfycbwct-j94qIwoqet8fc3uss54WZ0uK2EsBpQSUkcb6N5nOtHofouSSsldnVZiaJ7XKlvOw/exec',
+      {
+        method: 'POST',
+        body: JSON.stringify({
+          p1: { high: highScore1, speed: step1 },
+          p2: { high: highScore2, speed: step2 }
+        })
+      }
+    );
+  } catch {}
+}
+
 async function syncLoad(){
-  try{
-    const res=await fetch('https://script.google.com/macros/s/AKfycbwct-j94qIwoqet8fc3uss54WZ0uK2EsBpQSUkcb6N5nOtHofouSSsldnVZiaJ7XKlvOw/exec?action=getData');
-    const data=await res.json();
-    data.forEach(([p,h,s])=>{
-      if(p==='Player1'){highScore1=h;step1=s;}
-      if(p==='Player2'){highScore2=h;step2=s;}
+  // 1. Load LOCAL first
+  const localH1 = safeGet('highScore1');
+  const localH2 = safeGet('highScore2');
+  const localS1 = safeGet('player1Speed', 3);
+  const localS2 = safeGet('player2Speed', 3);
+
+  let remoteH1 = 0, remoteH2 = 0;
+  let remoteS1 = localS1, remoteS2 = localS2;
+
+  // 2. Try REMOTE
+  try {
+    const res = await fetch(
+      'https://script.google.com/macros/s/AKfycbwct-j94qIwoqet8fc3uss54WZ0uK2EsBpQSUkcb6N5nOtHofouSSsldnVZiaJ7XKlvOw/exec?action=getData'
+    );
+    const data = await res.json();
+
+    data.forEach(([p, h, s]) => {
+      if (p === 'Player1') { remoteH1 = h; remoteS1 = s; }
+      if (p === 'Player2') { remoteH2 = h; remoteS2 = s; }
     });
-  }catch{}
-  menuSpeed1.value=step1;
-  menuSpeed2.value=step2;
+  } catch {}
+
+  // 3. Merge scores
+  highScore1 = mergeHighScore(highScore1, localH1, remoteH1);
+  highScore2 = mergeHighScore(highScore2, localH2, remoteH2);
+
+  // 4. Choose speeds (remote > local > default)
+  step1 = remoteS1 ?? localS1;
+  step2 = remoteS2 ?? localS2;
+
+  // 5. Write merged result back to LOCAL
+  safeSet('highScore1', highScore1);
+  safeSet('highScore2', highScore2);
+  safeSet('player1Speed', step1);
+  safeSet('player2Speed', step2);
+
+  // 6. Update UI
+  menuSpeed1.value = step1;
+  menuSpeed2.value = step2;
+  highScoreDisplay1.textContent = 'High Score: ' + highScore1;
+  highScoreDisplay2.textContent = 'High Score: ' + highScore2;
 }
 
 /* ======================
