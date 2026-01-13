@@ -171,9 +171,9 @@ body {
 /* ======================
    CONSTANTS & STATE
    ====================== */
-const coinSound = new Audio(
-  'data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAESsAACJWAAACABAAZGF0YQAAAAA='
-);
+const coinSound = new Audio('coin.mp3');
+coinSound.volume = 0.6;      // adjust to taste
+coinSound.preload = 'auto';
 const GAME_SIZE=600, PLAYER_SIZE=40, COIN_SIZE=30;
 let gameOver=false, timeLeft=60, timerInterval;
 let gameMode=1;
@@ -328,7 +328,11 @@ function checkCollision(p,id){
       showFloatingText('+1', cx + 10, cy - 5);
 
       // Sound (fails silently if blocked)
-      try { coinSound.currentTime = 0; coinSound.play(); } catch {}
+      try {
+     const s = coinSound.cloneNode();
+     s.currentTime = 0.95 + Math.random() * 0.1;
+     s.play();
+     } catch {}
 
       // Remove coin after animation
       setTimeout(() => {
