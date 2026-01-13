@@ -330,7 +330,8 @@ function checkCollision(p,id){
       // Sound (fails silently if blocked)
       try {
      const s = coinSound.cloneNode();
-     s.currentTime = 0.95 + Math.random() * 0.1;
+      s.playbackRate = 0.95 + Math.random() * 0.1; // pitch variation
+     s.currentTime = 0;
      s.play();
      } catch {}
 
