@@ -64,6 +64,22 @@ body {
   to   { transform: translateY(-30px); opacity: 0; }
 }
 
+@keyframes coinSpawn {
+  from {
+    transform: scale(0);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.coin.spawn {
+  animation: coinSpawn 250ms ease-out;
+}
+
+   
 /* ======================
    MENU
    ====================== */
@@ -273,12 +289,17 @@ const player2UI=[player2,scoreDisplay2,highScoreDisplay2];
 let coins=[];
 function spawnCoin(){
   const c=document.createElement('div');
-  c.className='coin';
+  c.className='coin spawn';
   c.style.left=Math.random()*(GAME_SIZE-COIN_SIZE)+'px';
   c.style.top=Math.random()*(GAME_SIZE-COIN_SIZE)+'px';
+
   gameArea.appendChild(c);
   coins.push(c);
+
+  // Remove spawn class after animation
+  setTimeout(() => c.classList.remove('spawn'), 250);
 }
+
 
 function showFloatingText(text, x, y) {
   const el = document.createElement('div');
@@ -392,7 +413,6 @@ function gameLoop(){
 
   }
 
-  if (rafId) cancelAnimationFrame(rafId);
   rafId = requestAnimationFrame(gameLoop);
 }
 
