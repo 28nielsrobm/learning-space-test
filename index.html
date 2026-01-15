@@ -117,6 +117,11 @@ body {
   font-size:24px;
 }
 
+.pause {
+  background: rgba(0,0,0,0.7);
+  backdrop-filter: blur(2px);
+}
+   
 /* ======================
    HIDDEN
    ====================== */
@@ -132,6 +137,14 @@ body {
    
 <!-- ===== COUNTDOWN OVERLAY ===== -->
 <div id="countdown" class="loading hidden"></div>
+
+<!-- ===== PAUSE OVERLAY ===== -->
+<div id="pauseOverlay" class="loading hidden">
+  <div style="text-align:center">
+    <h1>Paused</h1>
+    <p>Press ESC to Resume</p>
+  </div>
+</div>
    
 <!-- ===== MENU ===== -->
 <div id="menu" class="menu hidden">
@@ -202,6 +215,7 @@ const finalScore2=document.getElementById('finalScore2');
 const finalHighScore1=document.getElementById('finalHighScore1');
 const finalHighScore2=document.getElementById('finalHighScore2');
 
+const pauseOverlay = document.getElementById('pauseOverlay');
 /* ======================
    SCORES
    ====================== */
@@ -291,10 +305,13 @@ document.addEventListener('keydown', e => {
     isPaused = !isPaused;
 
     if (isPaused) {
-      clearInterval(timerInterval);
-    } else {
-      startTimer();
-    }
+  clearInterval(timerInterval);
+  timerInterval = null;
+  pauseOverlay.classList.remove('hidden');
+} else {
+  pauseOverlay.classList.add('hidden');
+  startTimer();
+}
   }
 });
 
@@ -374,7 +391,8 @@ function gameLoop(){
     }
 
   }
-     
+
+  if (rafId) cancelAnimationFrame(rafId);
   rafId = requestAnimationFrame(gameLoop);
 }
 
@@ -490,6 +508,8 @@ function resetGameState(){
   timerDisplay.textContent = 'Time: 60';
   scoreDisplay1.textContent = 'Score: 0';
   scoreDisplay2.textContent = 'Score: 0';
+
+  pauseOverlay.classList.add('hidden');
 
   clearInterval(timerInterval);
   if (rafId) cancelAnimationFrame(rafId);
