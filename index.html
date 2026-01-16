@@ -475,6 +475,11 @@ async function startCountdown() {
   rafId = requestAnimationFrame(gameLoop);
 }
 
+function startGame() {
+  for (let i = 0; i < 10; i++) spawnCoin();
+  startCountdown();
+}
+   
 /* ======================
    MENU CONTROL
    ====================== */
@@ -497,10 +502,12 @@ startButton.onclick=()=>{
   if (gameMode === 2) {
      step2=Number(menuSpeed2.value);
   }
+   
   menu.classList.add('hidden');
   saveButton.classList.remove('hidden');
-  for(let i=0;i<10;i++)spawnCoin();
-  startCountdown();
+   
+  startGame();
+   
   localStorage.setItem('player1Speed', step1);
   if (gameMode === 2) {
     localStorage.setItem('player2Speed', step2);
@@ -547,9 +554,7 @@ gameOverReplay.onclick = () => {
   gameOverScreen.classList.add('hidden');
   resetGameState();
 
-  for (let i = 0; i < 10; i++) spawnCoin();
-  startTimer();
-  rafId = requestAnimationFrame(gameLoop);
+  startGame();
 };
 
 /* ======================
