@@ -1,0 +1,21 @@
+{
+  "name": "Learning Space",
+  "short_name": "Learning Space",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#111111",
+  "theme_color": "#00ffcc",
+  "orientation": "landscape",
+  "icons": [
+    {
+      "src": "learning-space.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "learning-space.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
