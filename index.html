@@ -321,7 +321,7 @@ document.addEventListener('keyup',e=>keys[e.key]=false);
 
 document.addEventListener('keydown', e => {
   if (e.key === 'Escape' && !menu.classList.contains('hidden')) return;
-
+  if (isCountingDown) return;
   if (e.key === 'Escape' && !gameOver) {
     isPaused = !isPaused;
 
@@ -369,7 +369,6 @@ function checkCollision(p,id){
       try {
      const s = coinSound.cloneNode();
       s.playbackRate = 0.95 + Math.random() * 0.6; // pitch variation
-     s.currentTime = 0;
      s.play();
      } catch {}
 
@@ -421,6 +420,7 @@ function gameLoop(){
    ====================== */
 if (timerInterval) clearInterval(timerInterval);
 function startTimer(){
+  if (isPaused || isCountingDown) return;
   timerInterval=setInterval(()=>{
     timeLeft--;
     timerDisplay.textContent = `Time: ${timeLeft}`;
@@ -433,10 +433,10 @@ function startTimer(){
 }
 
 function endGame(){ 
-  highScore1 = mergeHighScore(highScore1, score1, safeGet('highScore1'));
+  highScore1 = Math.max(highScore1, score1);
 
   if (gameMode === 2) {
-     highScore2 = mergeHighScore(highScore2, score2, safeGet('highScore2'));
+     highScore2 = Math.max(highScore2, score2);
   }
    
   highScoreDisplay1.textContent = 'High Score: ' + highScore1;
@@ -580,25 +580,54 @@ function mergeHighScore(current, local, remote) {
   return Math.max(current || 0, local || 0, remote || 0);
 }
 
+const API_URL =
+  'https://script.google.com/macros/s/AKfycbzzzREvNTl4Fnz4dKDMDqvRQ9U7zZavsaL7DpQkaYCR_sLDmT6EQG7yuMNAMbNY4uGODw/exec';
+
 async function saveAll() {
+  // Local save
   safeSet('highScore1', highScore1);
   safeSet('highScore2', highScore2);
   safeSet('player1Speed', step1);
   safeSet('player2Speed', step2);
 
   try {
-    await fetch(
-      'https://script.google.com/macros/s/AKfycbwct-j94qIwoqet8fc3uss54WZ0uK2EsBpQSUkcb6N5nOtHofouSSsldnVZiaJ7XKlvOw/exec',
-      {
+    // Player 1
+    let res = await fetch(API_URL, {
+      method: 'POST',
+      body: JSON.stringify({
+        player: 'Player1',
+        highScore: highScore1,
+        speed: step1
+      })
+    });
+
+    let result = await res.json();
+    if (!result.success) {
+      console.warn('Player1 save failed', result);
+    }
+
+    // Player 2
+    if (gameMode === 2) {
+      res = await fetch(API_URL, {
         method: 'POST',
         body: JSON.stringify({
-          p1: { high: highScore1, speed: step1 },
-          p2: { high: highScore2, speed: step2 }
+          player: 'Player2',
+          highScore: highScore2,
+          speed: step2
         })
+      });
+
+      result = await res.json();
+      if (!result.success) {
+        console.warn('Player2 save failed', result);
       }
-    );
-  } catch {}
+    }
+  } catch (e) {
+    console.warn('Remote save failed', e);
+  }
 }
+
+
 
 async function syncLoad(){
   // 1. Load LOCAL first
@@ -613,7 +642,7 @@ async function syncLoad(){
   // 2. Try REMOTE
   try {
     const res = await fetch(
-      'https://script.google.com/macros/s/AKfycbwct-j94qIwoqet8fc3uss54WZ0uK2EsBpQSUkcb6N5nOtHofouSSsldnVZiaJ7XKlvOw/exec?action=getData'
+      'https://script.google.com/macros/s/AKfycbzzzREvNTl4Fnz4dKDMDqvRQ9U7zZavsaL7DpQkaYCR_sLDmT6EQG7yuMNAMbNY4uGODw/exec?action=getData'
     );
     const data = await res.json();
 
