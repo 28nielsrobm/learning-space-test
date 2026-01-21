@@ -238,9 +238,18 @@ const pauseOverlay = document.getElementById('pauseOverlay');
 let score1=0, score2=0;
 let highScore1=Number(localStorage.getItem('highScore1'))||0;
 let highScore2=Number(localStorage.getItem('highScore2'))||0;
-let step1=Number(localStorage.getItem('player1Speed'))??3;
-let step2=Number(localStorage.getItem('player2Speed'))??3;
+let step1 = safeGet('player1Speed', 3);
+let step2 = safeGet('player2Speed', 3);
 
+function el(tag, opts = {}) { 
+   const e = document.createElement(tag); 
+   if (opts.class) e.className = opts.class; 
+   if (opts.text != null) e.textContent = opts.text; 
+   if (opts.css) Object.assign(e.style, opts.css); 
+   if (opts.parent) opts.parent.appendChild(e); 
+   return e; 
+}
+   
 /* ======================
    GAME AREA
    ====================== */
@@ -248,13 +257,16 @@ const gameArea=document.createElement('div');
 gameArea.className='game-area';
 document.body.appendChild(gameArea);
 
-function createPlayer(color,x,y){
-  const p=document.createElement('div');
-  p.className='player';
-  p.style.backgroundColor=color;
-  p.style.left=x+'px';
-  p.style.top=y+'px';
-  return p;
+function createPlayer(color, x, y) {
+   return el('div',{
+      class: 'player',
+      css: {
+         backgroundColor: color,
+         left: x + 'px',
+         top: y + 'px' 
+      }, 
+      parent: gameArea 
+   }); 
 }
 
 const player1=createPlayer('#ff4d4d',100,180);
@@ -264,14 +276,14 @@ gameArea.append(player1,player2);
 /* ======================
    LABELS
    ====================== */
-function makeLabel(text,top,left){
-  const l=document.createElement('div');
-  l.className='label';
-  l.textContent=text;
-  l.style.top=top;
-  l.style.left=left;
-  gameArea.appendChild(l);
-  return l;
+function makeLabel(text, top, left) {
+   return el('div',{
+      class: 'label',
+      text,
+      css: {
+         top, left },
+      parent: gameArea 
+   }); 
 }
 
 const scoreDisplay1=makeLabel('Score: 0','5px','5px');
@@ -287,29 +299,30 @@ const player2UI=[player2,scoreDisplay2,highScoreDisplay2];
    COINS
    ====================== */
 let coins=[];
-function spawnCoin(){
-  const c=document.createElement('div');
-  c.className='coin spawn';
-  c.style.left=Math.random()*(GAME_SIZE-COIN_SIZE)+'px';
-  c.style.top=Math.random()*(GAME_SIZE-COIN_SIZE)+'px';
-
-  gameArea.appendChild(c);
-  coins.push(c);
-
-  // Remove spawn class after animation
-  setTimeout(() => c.classList.remove('spawn'), 250);
+function spawnCoin() {
+   const c = el('div', {
+      class: 'coin spawn',
+      css: {
+         left: Math.random() * (GAME_SIZE - COIN_SIZE) + 'px',
+         top: Math.random() * (GAME_SIZE - COIN_SIZE) + 'px' 
+      }, 
+      parent: gameArea 
+   }); 
+   coins.push(c); 
+   setTimeout(() => c.classList.remove('spawn'), 250);
 }
 
 
 function showFloatingText(text, x, y) {
-  const el = document.createElement('div');
-  el.className = 'floating-text';
-  el.textContent = text;
-  el.style.left = x + 'px';
-  el.style.top = y + 'px';
-  gameArea.appendChild(el);
-
-  setTimeout(() => el.remove(), 700);
+   const el = el('div',{
+      class: 'floating-text', 
+      text,
+      css: {
+         left: x + 'px', top: y + 'px' 
+      }, 
+      parent: gameArea 
+   }); 
+   setTimeout(() => el.remove(), 700); 
 }
 
 /* ======================
@@ -351,7 +364,7 @@ function movePlayer(p,step,u,d,l,r){
 }
 
 function checkCollision(p,id){
-  for(let i=coins.length-1;i>=0;i--){
+  for (let i = coins.length - 1; i >= 0; i--){
     const c=coins[i];
     const px=parseInt(p.style.left), py=parseInt(p.style.top);
     const cx=parseInt(c.style.left), cy=parseInt(c.style.top);
@@ -438,8 +451,7 @@ function endGame(){
   if (gameMode === 2) {
      highScore2 = Math.max(highScore2, score2);
   }
-   
-  highScoreDisplay1.textContent = 'High Score: ' + highScore1;
+
   finalScore1.textContent = `Player 1 Score: ${score1}`;
   finalHighScore1.textContent = `Player 1 High Score: ${highScore1}`;
   highScoreDisplay1.textContent = 'High Score: ' + highScore1;
@@ -592,13 +604,15 @@ async function saveAll() {
 
   try {
     // Player 1
-    let res = await fetch(API_URL, {
-      method: 'POST',
-      body: JSON.stringify({
-        player: 'Player1',
-        highScore: highScore1,
-        speed: step1
-      })
+    res = await fetch(API_URL,
+    { method: 'POST',
+     headers: { 
+        'Content-Type': 'application/json' },
+     body: JSON.stringify({ 
+        player: 'Player1', 
+        highScore: highScore1, 
+        speed: step1 
+     }) 
     });
 
     let result = await res.json();
@@ -608,14 +622,16 @@ async function saveAll() {
 
     // Player 2
     if (gameMode === 2) {
-      res = await fetch(API_URL, {
-        method: 'POST',
-        body: JSON.stringify({
-          player: 'Player2',
-          highScore: highScore2,
-          speed: step2
-        })
-      });
+    res = await fetch(API_URL,
+    { method: 'POST',
+     headers: { 
+        'Content-Type': 'application/json' },
+     body: JSON.stringify({ 
+        player: 'Player2', 
+        highScore: highScore2, 
+        speed: step2 
+     }) 
+    });
 
       result = await res.json();
       if (!result.success) {
