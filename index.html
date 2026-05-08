@@ -316,7 +316,7 @@ function spawnCoin() {
 
 
 function showFloatingText(text, x, y) {
-   const el = el('div',{
+   const element = el('div',{
       class: 'floating-text', 
       text,
       css: {
@@ -324,7 +324,7 @@ function showFloatingText(text, x, y) {
       }, 
       parent: gameArea 
    }); 
-   setTimeout(() => el.remove(), 700); 
+   setTimeout(() => element.remove(), 700); 
 }
 
 /* ======================
