@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <title>Learning Space</title>
-<link rel="icon" type="image/png" href="learning-space (1)-Photoroom.png">
+<link rel="icon" type="image/png" href="learning-space.png">
 
 <style>
 /* ======================
@@ -210,6 +210,8 @@ let rafId = null;
 let isPaused = false;
 let isCountingDown = false;
 const countdown = document.getElementById('countdown');
+let res;
+let result;
 
 /* ======================
    ELEMENTS
@@ -601,7 +603,7 @@ async function saveAll() {
   safeSet('highScore2', highScore2);
   safeSet('player1Speed', step1);
   safeSet('player2Speed', step2);
-
+   
   try {
     // Player 1
     res = await fetch(API_URL,
@@ -615,7 +617,7 @@ async function saveAll() {
      }) 
     });
 
-    let result = await res.json();
+    result = await res.json();
     if (!result.success) {
       console.warn('Player1 save failed', result);
     }
